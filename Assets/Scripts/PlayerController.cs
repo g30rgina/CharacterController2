@@ -5,7 +5,9 @@ public class PlayerController : MonoBehaviour
 { 
     private CharacterController _characterController;
     private InputAction _moveAction; 
-    private Vector2 _moveInput; 
+    private Vector2 _moveInput;  
+private InputAction _aimAction;
+
     
     [SerializeField] private float _movementSpeed = 10; 
 
@@ -18,12 +20,23 @@ public class PlayerController : MonoBehaviour
 
        [SerializeField]  private Transform _sensorTransform; 
        [SerializeField] private float _sensorRadius; 
-       [SerializeField] private LayerMask _groundLayer;
+       [SerializeField] private LayerMask _groundLayer;  
+
+
+    private InputAction _jumpAction; 
+    [SerializeField] private float _jumpHeight = 2; 
+
+    private Transform _cameraTransform;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
        _characterController = GetComponent<CharacterController>();
-       _moveAction = InputSystem.actions["Move"]; 
+       _moveAction = InputSystem.actions["Move"];  
+       _jumpAction = InputSystem.actions["Jump"];   
+       _aimAction = InputSystem.actions["Aim"];  
+        _cameraTransform = Camera.main.transform;  
+
     }
     void Start()
     {
@@ -35,10 +48,21 @@ public class PlayerController : MonoBehaviour
     {
       _moveInput = _moveAction.ReadValue<Vector2>();   
         Gravity(); 
-        Movement();
+        TPMovement(); 
+        if(_jumpAction.WasPressedThisFrame() && IsGrounded())
+        {
+            Jump();
+        }       
+       if(aimAction.IsPressed())     
+        {
+            AIMovement(); 
+        }  
+       else 
+        {  
+        TPMovement();
+        } 
     } 
-    
-    void Movement() 
+    void TopDownMovement() 
     {
      Vector3 moveDirection = new Vector3(_moveInput.x, 0, _moveInput.y);  
     
@@ -46,26 +70,59 @@ public class PlayerController : MonoBehaviour
 
     {
         float targetAngle = Mathf.Atan2(moveDirection.x, moveDirection.z) * Mathf.Rad2Deg; 
-        float smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref _turnSmoothvelocity, smoothTime); 
+        float smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, targetAngle, ref _turnSmoothvelocity, _smoothTime); 
     
          transform.rotation = Quaternion.Euler(0, smoothAngle, 0);
 
      _characterController.Move(moveDirection * _movementSpeed * Time.deltaTime);
     }
 
-    }  
+}  
 
+    void AiMovement() 
+   {
+    Vector3 direction = new Vector3(_moveInput.x, 0, _moveInput.y);  
+    
+    if(direction != Vector3.zero) 
+
+         float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
+        float smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, _cameraTransform.eulerAngles.y, ref _turnSmoothvelocity, _smoothTime); 
+    
+         transform.rotation = Quaternion.Euler(0, smoothAngle, 0); 
+    {
+         Vector3 moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward; 
+
+     _characterController.Move(moveDirection * _movementSpeed * Time.deltaTime);
+    }
+
+}
     void Gravity()
 
     {  
-        if(!_characterController.isGrounded) 
+        if(!IsGrounded())
         { 
         _playerGravity.y += _gravity * Time.deltaTime; 
         }
+        else if(IsGrounded() && _playerGravity.y < 0) 
+        { 
+            _playerGravity.y = _gravity;
+        }
+
         _characterController.Move(_playerGravity * Time.deltaTime);
-    } 
+    }  
+    void Jump() 
+    {  
+        _playerGravity.y = Mathf.Sqrt(_jumpHeight * -2 * _gravity);
+    }  
+
     bool IsGrounded() 
     { 
+        return Physics.CheckSphere(_sensorTransform.position, _sensorRadius, _groundLayer);
+    } 
 
-     }
+      void OnDrawGizmos()
+        {  
+            Gizmos.color = Color.red; 
+            Gizmos.DrawWireSphere(_sensorTransform.position, _sensorRadius);
+        } 
 } 
