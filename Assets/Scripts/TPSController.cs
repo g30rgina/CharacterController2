@@ -1,6 +1,7 @@
 using UnityEngine; 
 using UnityEngine.InputSystem;
-{ 
+
+
 public class TPSController : MonoBehaviour
 { 
      private CharacterController _characterController;
@@ -26,8 +27,10 @@ public class TPSController : MonoBehaviour
 
     private InputAction _jumpAction; 
     [SerializeField] private float _jumpHeight = 2;  
-  
+  [SerializeField] private GameObject _normalCamera;
+   [SerializeField] private GameObject _aimCamera;
 
+    private float _xRotation;
     private Transform _cameraTransform;
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
@@ -48,11 +51,21 @@ public class TPSController : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        _moveInput = moveAction.ReadValue<Vector>(); 
-        _lookInput = _lookAction.ReadValue<Vector>();  
+        _moveInput = _moveAction.ReadValue<Vector2>(); 
+        _lookInput = _lookAction.ReadValue<Vector2>();  
 
-    TPSmovement();
+    TPSMovement();
 
+    if(_aimAction.WasPressedThisFrame())
+    { 
+        _normalCamera.SetActive(false); 
+        _aimCamera.SetActive(true);
+    }   
+    else if(_aimAction.WasReleasedThisFrame())  
+    { 
+         _normalCamera.SetActive(true); 
+        _aimCamera.SetActive(false); 
+    } 
     Gravity(); 
         
         if(_jumpAction.WasPressedThisFrame() && IsGrounded())
@@ -62,11 +75,11 @@ public class TPSController : MonoBehaviour
 
     }  
     
-    void TPSNovement() 
+    void TPSMovement() 
     { 
-        Vector3 direction = new Vector3(moevInput.x, 0, _moveInput.y); 
-        float MouseX = lookInput.x * _cameraSensitivity * TimedeltaTime;
-        float MouseY = lookInput.y * _cameraSensitivity * TimedeltaTime; 
+        Vector3 direction = new Vector3(_moveInput.x, 0, _moveInput.y); 
+        float MouseX = _lookInput.x * _cameraSensitivity * Time.deltaTime;
+        float MouseY = _lookInput.y * _cameraSensitivity * Time.deltaTime; 
 
         _xRotation -= MouseY;  
         _xRotation = Mathf.Clamp(_xRotation, -90, 90); 
@@ -76,8 +89,8 @@ public class TPSController : MonoBehaviour
 
         if(direction != Vector3.zero) 
         { 
-            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + _camera 
-            Vector3 moveDirectin = Quaternion(0, targetAngle, 0) * Vector3.forward; 
+            float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
+            Vector3 moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward; 
 
             _characterController.Move(moveDirection * _movementSpeed * Time.deltaTime);  
         }       
@@ -113,4 +126,5 @@ public class TPSController : MonoBehaviour
             Gizmos.DrawWireSphere(_sensorTransform.position, _sensorRadius);
         } 
     }
-}
+
+

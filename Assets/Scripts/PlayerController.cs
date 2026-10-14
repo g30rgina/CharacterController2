@@ -6,8 +6,8 @@ public class PlayerController : MonoBehaviour
     private CharacterController _characterController;
     private InputAction _moveAction; 
     private Vector2 _moveInput;  
-private InputAction _aimAction;
-
+    private InputAction _aimAction;
+    
     
     [SerializeField] private float _movementSpeed = 10; 
 
@@ -35,7 +35,8 @@ private InputAction _aimAction;
        _moveAction = InputSystem.actions["Move"];  
        _jumpAction = InputSystem.actions["Jump"];   
        _aimAction = InputSystem.actions["Aim"];  
-        _cameraTransform = Camera.main.transform;  
+        _cameraTransform = Camera.main.transform;   
+
 
     }
     void Start()
@@ -48,23 +49,26 @@ private InputAction _aimAction;
     {
       _moveInput = _moveAction.ReadValue<Vector2>();   
         Gravity(); 
-        TPMovement(); 
+      //TPSMovement(); 
         if(_jumpAction.WasPressedThisFrame() && IsGrounded())
         {
             Jump();
         }       
-       if(aimAction.IsPressed())     
+       if(_aimAction.IsPressed())     
         {
-            AIMovement(); 
+            AimMovement(); 
         }  
        else 
         {  
-        TPMovement();
+    //    TPSMovement();
         } 
     } 
     void TopDownMovement() 
     {
      Vector3 moveDirection = new Vector3(_moveInput.x, 0, _moveInput.y);  
+
+     _animator.SetFloat("Vertical", direction.magnitude);
+    _animator.SetFloat("Horizontal", 0);
     
     if(moveDirection != Vector3.zero) 
 
@@ -79,17 +83,20 @@ private InputAction _aimAction;
 
 }  
 
-    void AiMovement() 
+    void AimMovement() 
    {
-    Vector3 direction = new Vector3(_moveInput.x, 0, _moveInput.y);  
+    Vector3 direction = new Vector3(_moveInput.x, 0, _moveInput.y);   
+
+    _animator.SetFloat("Horizontal", _moveInput.x);
+    _animator.SetFloat("Vertical", _moveInput.y);
     
     if(direction != Vector3.zero) 
-
+    {
          float targetAngle = Mathf.Atan2(direction.x, direction.z) * Mathf.Rad2Deg + _cameraTransform.eulerAngles.y;
         float smoothAngle = Mathf.SmoothDampAngle(transform.eulerAngles.y, _cameraTransform.eulerAngles.y, ref _turnSmoothvelocity, _smoothTime); 
     
          transform.rotation = Quaternion.Euler(0, smoothAngle, 0); 
-    {
+   
          Vector3 moveDirection = Quaternion.Euler(0, targetAngle, 0) * Vector3.forward; 
 
      _characterController.Move(moveDirection * _movementSpeed * Time.deltaTime);
