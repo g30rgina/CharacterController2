@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     private Vector2 _moveInput;  
     private InputAction _aimAction;
     
+    private Animator _animator;
     
     [SerializeField] private float _movementSpeed = 10; 
 
@@ -62,7 +63,9 @@ public class PlayerController : MonoBehaviour
         {  
     //    TPSMovement();
         } 
-    } 
+    }
+
+    /*
     void TopDownMovement() 
     {
      Vector3 moveDirection = new Vector3(_moveInput.x, 0, _moveInput.y);  
@@ -79,7 +82,7 @@ public class PlayerController : MonoBehaviour
          transform.rotation = Quaternion.Euler(0, smoothAngle, 0);
 
      _characterController.Move(moveDirection * _movementSpeed * Time.deltaTime);
-    }
+    }*/
 
 }  
 
