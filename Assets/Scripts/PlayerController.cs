@@ -24,11 +24,19 @@ public class PlayerController : MonoBehaviour
        [SerializeField] private LayerMask _groundLayer;  
 
 
+
     private InputAction _jumpAction; 
     [SerializeField] private float _jumpHeight = 2; 
 
-    private Transform _cameraTransform;
+    private Transform _cameraTransform; 
 
+    private GameObject _grabbedObject; 
+    [SerializeField] private Transform _handsTransform; 
+    [SerializeField] private float _handsRadius = 1;  
+
+    [SerializeField] private float _throwForce = 20; 
+
+    [SerializeField] InputAction _attackAction; 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Awake()
     {
@@ -36,17 +44,23 @@ public class PlayerController : MonoBehaviour
        _moveAction = InputSystem.actions["Move"];  
        _jumpAction = InputSystem.actions["Jump"];   
        _aimAction = InputSystem.actions["Aim"];  
-        _cameraTransform = Camera.main.transform;   
+        _cameraTransform = Camera.main.transform;    
+        _interactAction = InputSystem.actions["Inreract"];   
+        _attackaction = InputSystem.actions["Attack"];    
+
+
 
 
     }
     void Start()
     {
-     _gravity = Physics.gravity.y;
+     _gravity = Physics.gravity.y; 
+    _cursorlockMo
+    _cameraTransform = camera.main.transform; 
     }
 
     // Update is called once per frame
-    void Update()
+    void Update() 
     {
       _moveInput = _moveAction.ReadValue<Vector2>();   
         Gravity(); 
@@ -61,7 +75,11 @@ public class PlayerController : MonoBehaviour
         }  
        else 
         {  
-    //    TPSMovement();
+        TPMovement();
+        }   
+        if(_interactAction.WasPressedThisFrame())
+        {  
+        GrabObject(); 
         } 
     }
 
@@ -130,9 +148,67 @@ public class PlayerController : MonoBehaviour
         return Physics.CheckSphere(_sensorTransform.position, _sensorRadius, _groundLayer);
     } 
 
+    void ThrowObject() 
+    {
+        if(_grabbedObject != null) 
+        {  
+            Rigidbody objectRigidbody = grabbedObject.GetComponent<Rigidbody>();  
+            objectRigidbody.isKinematic = false; 
+            _grabbedObject.transform.SetParent(null);  
+            objectRigidbody.AddForce(_cameraTransform.forward * _throwforce, ForceMode.Impulse);
+
+            _grabbedObject = null;
+        } 
+    }
+
+
+    void OnControllerColliderHit(ControllerColliderHit hit) 
+    { 
+        if(hit.gameObject.CompareTag("Empujable")) 
+        {  
+            Rigidbody _rbody = hit.gameObject.GetComponent<Rigidbody>(); 
+
+            Vector3 pushDirection = hit.moveDirection;
+        } 
+    } 
+    void GrabObject()
+    { 
+        if(_grabbedObject == null)
+        {  
+            Collider[] objectToGrab = physics.OverlapSphere(handsTransform.position, handsRadius);
+        foreach(Collider item in objectsToGrab) 
+           if(item.CompareTag("Empujable"))
+            {
+             _grabbedObject = item.gameObject; 
+             _grabbedObject.transform.SetParent(_handsTransform);
+             _grabbedObject.transform.position = _handsTransform.position; 
+             _grabbedObject.transform.rotation = _handsTransform.rotation; 
+             Rigidbody objectRigidbody = grabbedObject.GetComponent<Rigidbody>();  
+             objectRigidbody.isKinematic = true; 
+             objectRigidbody.contraints = RigidbodyContraints.None; 
+
+            return;         
+            }
+        } 
+    } 
+     else  
+    {
+        Rigidbody objectRigidbody = grabbedObject.GetComponent<Rigidbody<(); 
+        objectRigidbody.isKinematic = false;
+        _grabbedObject.transform.SetParent(null); 
+        _grabbedObject = null; 
+    }   
+
+
+
+
       void OnDrawGizmos()
         {  
             Gizmos.color = Color.red; 
-            Gizmos.DrawWireSphere(_sensorTransform.position, _sensorRadius);
-        } 
+            Gizmos.DrawWireSphere(_sensorTransform.position, _sensorRadius); 
+
+            Gizmos.color = Color.yellow; 
+            Gizmos.DrawWireSphere(_handsTransform.position, _sensorRadius); 
+        }  
+    {     
 } 
