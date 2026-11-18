@@ -45,8 +45,8 @@ public class PlayerController : MonoBehaviour
        _jumpAction = InputSystem.actions["Jump"];   
        _aimAction = InputSystem.actions["Aim"];  
         _cameraTransform = Camera.main.transform;    
-        _interactAction = InputSystem.actions["Inreract"];   
-        _attackaction = InputSystem.actions["Attack"];    
+        //_interactAction = InputSystem.actions["Inreract"];   
+        //_attackaction = InputSystem.actions["Attack"];    
 
 
 
@@ -100,9 +100,9 @@ public class PlayerController : MonoBehaviour
          transform.rotation = Quaternion.Euler(0, smoothAngle, 0);
 
      _characterController.Move(moveDirection * _movementSpeed * Time.deltaTime);
-    }*/
+    }
 
-}  
+}  */
 
     void AimMovement() 
    {
@@ -190,19 +190,18 @@ public class PlayerController : MonoBehaviour
             return;         
             }
         } 
-    } 
-     else  
+     
+        else  
     {
-        Rigidbody objectRigidbody = grabbedObject.GetComponent<Rigidbody<(); 
+        Rigidbody objectRigidbody = grabbedObject.GetComponent<Rigidbody>(); 
         objectRigidbody.isKinematic = false;
         _grabbedObject.transform.SetParent(null); 
         _grabbedObject = null; 
     }   
 
-
-
-
-      void OnDrawGizmos()
+}
+ 
+         void OnDrawGizmos()
         {  
             Gizmos.color = Color.red; 
             Gizmos.DrawWireSphere(_sensorTransform.position, _sensorRadius); 
@@ -210,5 +209,4 @@ public class PlayerController : MonoBehaviour
             Gizmos.color = Color.yellow; 
             Gizmos.DrawWireSphere(_handsTransform.position, _sensorRadius); 
         }  
-    {     
 } 

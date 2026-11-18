@@ -16,6 +16,6 @@ public class Caja : MonoBehaviour
 
     public void TakeDamage()
     {
-        Debug.Log ("recibiendo daño")
+        Debug.Log ("recibiendo daño");
     }
 }
